@@ -1,0 +1,1360 @@
+
+; 64tass Turbo Assembler Macro V1.54.1900 listing file
+; 64tass.exe -a -o vdcbitmapscroll.prg --no-caret-diag --dump-labels -l vdcbitmapscroll.tass -L vdcbitmapscroll.list --verbose-list --line-numbers -D MODEL=\^"C128\^" -D BDD=0 -D CRT=0 vdcbitmapscroll.mla
+; Fri Apr 05 20:35:23 2019
+
+;Line	;Offset	;Hex		;Monitor	;Source
+
+	;******  Command line definitions
+
+	="C128"					MODEL="C128"
+	=0					BDD=0
+	=0					CRT=0
+
+:1	;******  Processing input file: vdcbitmapscroll.mla
+
+
+2						*= $02
+3	.0002					ZPPointer1 .dunion HLWORD
+1069	>0002					 .word ?
+1070						 .struct
+1071	>0002					 	lo .byte ?
+1072	>0003					 	hi .byte ?
+1073						 .ends
+1074						.endu
+4	.0004					ZPPointer2 .dunion HLWORD
+1069	>0004					 .word ?
+1070						 .struct
+1071	>0004					 	lo .byte ?
+1072	>0005					 	hi .byte ?
+1073						 .ends
+1074						.endu
+5	.0006					ZPPointer3 .dunion HLWORD
+1069	>0006					 .word ?
+1070						 .struct
+1071	>0006					 	lo .byte ?
+1072	>0007					 	hi .byte ?
+1073						 .ends
+1074						.endu
+6	.0008					ZPPointer4 .dunion HLWORD
+1069	>0008					 .word ?
+1070						 .struct
+1071	>0008					 	lo .byte ?
+1072	>0009					 	hi .byte ?
+1073						 .ends
+1074						.endu
+7	.000a					ZPPointer5 .dunion HLWORD
+1069	>000a					 .word ?
+1070						 .struct
+1071	>000a					 	lo .byte ?
+1072	>000b					 	hi .byte ?
+1073						 .ends
+1074						.endu
+8	.000c					ZPPointer6 .dunion HLWORD
+1069	>000c					 .word ?
+1070						 .struct
+1071	>000c					 	lo .byte ?
+1072	>000d					 	hi .byte ?
+1073						 .ends
+1074						.endu
+9	.000e					ZPPointer7 .dunion HLWORD
+1069	>000e					 .word ?
+1070						 .struct
+1071	>000e					 	lo .byte ?
+1072	>000f					 	hi .byte ?
+1073						 .ends
+1074						.endu
+10	.0010					ZPPointer8 .dunion HLWORD
+1069	>0010					 .word ?
+1070						 .struct
+1071	>0010					 	lo .byte ?
+1072	>0011					 	hi .byte ?
+1073						 .ends
+1074						.endu
+11	.0012					ZPPointer9 .dunion HLWORD
+1069	>0012					 .word ?
+1070						 .struct
+1071	>0012					 	lo .byte ?
+1072	>0013					 	hi .byte ?
+1073						 .ends
+1074						.endu
+12	.0014					mapPointer .dunion HLWORD
+1069	>0014					 .word ?
+1070						 .struct
+1071	>0014					 	lo .byte ?
+1072	>0015					 	hi .byte ?
+1073						 .ends
+1074						.endu
+13	.0016					mapPointerCache .dunion HLWORD
+1069	>0016					 .word ?
+1070						 .struct
+1071	>0016					 	lo .byte ?
+1072	>0017					 	hi .byte ?
+1073						 .ends
+1074						.endu
+14	>0018					activeBitmap .byte ?
+15	>0019					VDCReg24Shadow .byte ?
+16	>001a					ZPTemp1 .byte ?
+17	>001b					ZPTemp2 .byte ?
+18	>001c					ZPTemp3 .byte ?
+19	>001d					ZPTemp4 .byte ?
+20	>001e					ZPTemp5 .byte ?
+21	.001f					Map .block
+22	>001f					 x .byte ?
+23	>0020					 y .byte ?
+24						.bend
+
+26						;VDC MEM MAP
+27						;    0 - 1b80 Bitmap
+28						; 1b80 - 1ef0 Attributes
+29						; 1f00 - 3a80 Bitmap
+30						; 3a80 - 3df0 Attributes
+31						; 3e00 - 3FFF buffer 512 bytes
+
+33	=40					kMapWidth = 40
+34	=12					kMapHeight = 12
+
+36	=20					kScreenTileWidth = 20
+37	=11					kScreenTileHeight = 11
+
+39	=40					kScreenWidth = 40
+40	=22					kScreenHeight = 22
+41	=$0000					kBitmap1 = $0000
+42	=$1b80					kAttributes1 = $1b80
+43	=$1f00					kBitmap2 = $1f00
+44	=$3a80					kAttributes2  = $3a80
+
+46	=880					kAttributeBytes = kScreenWidth * kScreenHeight ; 880
+47	=7040					kBitmapBytes = kAttributeBytes * 8 ; 7040
+
+49	=1					MODE128 = 1
+
+51							*= $1c01
+52	>1c01	0b 1c 0a 00				.word (+), 10
+53	>1c05	9e 37 31 38 31 00			.null $9e, "7181"
+54	>1c0b	00 00					+ .word 0
+55							*=7181
+
+1040	.1c0d	78		sei			sei
+1041	.1c0e	a9 7f		lda #$7f		lda #$7f
+1042	.1c10	8d 0d dc	sta $dc0d		sta $dc0d		 ;turn off all types of cia irq/nmi.
+1043	.1c13	8d 0d dd	sta $dd0d		sta $dd0d
+1044	.1c16	ad 0d dc	lda $dc0d		lda $dc0d
+1045	.1c19	ad 0d dd	lda $dd0d		lda $dd0d
+1046	.1c1c	a9 ff		lda #$ff		lda #$ff
+1047	.1c1e	8d 19 d0	sta $d019		sta $D019
+1048	.1c21	a9 00		lda #$00		lda #$00
+1049	.1c23	8d 1a d0	sta $d01a		sta $D01a
+1050	.1c26	8d 0e dc	sta $dc0e		sta $dc0e
+1051	.1c29	8d 0f dc	sta $dc0f		sta $dc0f
+1052	.1c2c	8d 0e dd	sta $dd0e		sta $dd0e
+1053	.1c2f	8d 0f dd	sta $dd0f		sta $dd0f
+1054	.1c32	ad 1e d0	lda $d01e		lda $d01e
+1055	.1c35	ad 1f d0	lda $d01f		lda $d01f
+58	.1c38	ee 30 d0	inc $d030		inc $d030						 ; enable fast mode
+59	.1c3b	a2 00		ldx #$00		LDX #$00
+60	.1c3d	20 f9 22	jsr $22f9	   JSR INIT80VDCRegs            ;$E1DC Set Up CRTC Registers
+61	.1c40	ad 00 d6	lda $d600	   LDA $D600
+62	.1c43	29 07		and #$07	   AND #$07
+63	.1c45	f0 05		beq $1c4c	   BEQ bE18A
+64	.1c47	a2 3b		ldx #$3b	   LDX #$3B
+65	.1c49	20 f9 22	jsr $22f9	   JSR INIT80VDCRegs            ;$E1DC Set Up CRTC Registers
+66	.1c4c					bE18A
+67							;set up 40 col bitmap
+68	.1c4c	a0 0d		ldy #$0d		ldy #VDC40ColSetup.length-1
+69	.1c4e	be 5a 1d	ldx $1d5a,y	-	ldx VDC40ColSetup.register,y
+70	.1c51	b9 68 1d	lda $1d68,y		lda VDC40ColSetup.value,y
+71	.1c54	20 a6 22	jsr $22a6		jsr writeVDCReg
+72	.1c57	88		dey			dey
+73	.1c58	10 f4		bpl $1c4e		bpl -
+74						; now I fill the screen with initial display
+75						; since this is done all at once, I use to have VIC-II formated data, so I converted the VIC-II
+76						; to VDC into a buffer and then I could just pump the data fast to the VDC save settign dest vector
+77						; each byte or row. This is probably the faster way to do it, and I might optimise the row/column
+78						; plots in the scroll to do this buffer/pump, buts if fast enough for now
+79						; we need to loook at the map, and build a 640 byte buffer in VDC format
+80	.1c5a	a9 00		lda #$00		lda #>0
+81	.1c5c	85 07		sta $07			sta ZPPointer3+1
+82	.1c5e	a9 0a		lda #$0a		lda #kScreenHeight/2 -1
+83	.1c60	85 1d		sta $1d			sta ZPTemp4
+84	.1c62	a9 00		lda #$00		lda #<DummyMap
+85	.1c64	85 14		sta $14			sta mapPointer
+86	.1c66	a9 00		lda #$00		lda #<0
+87	.1c68	85 06		sta $06			sta ZPPointer3
+88	.1c6a	a9 26		lda #$26		lda #>DummyMap
+89	.1c6c	85 15		sta $15			sta mapPointer+1
+90	.1c6e	a9 80		lda #$80		lda #<7040
+91	.1c70	85 0c		sta $0c			sta ZPPointer6
+92	.1c72	a9 1b		lda #$1b		lda #>7040
+93	.1c74	85 0d		sta $0d			sta ZPPointer6+1
+94	.1c76					_copySetLoop
+95	.1c76	a9 27		lda #$27		lda #>buffer
+96	.1c78	85 03		sta $03			sta ZPPointer1+1
+97	.1c7a	a9 e0		lda #$e0		lda #<buffer
+98	.1c7c	85 02		sta $02			sta ZPPointer1
+99	.1c7e	a0 00		ldy #$00		ldy #0
+100	.1c80	84 1a		sty $1a			sty ZPTemp1
+101	.1c82					-
+102	.1c82	20 7a 21	jsr $217a		jsr convertMapToPointerGetAttribute
+103	.1c85	a5 1e		lda $1e			lda ZPTemp5
+104	.1c87	99 e0 2c	sta $2ce0,y		sta AttriBuffer,y ; store the colour data we need
+105	.1c8a	99 e1 2c	sta $2ce1,y		sta AttriBuffer+1,y
+106	.1c8d	99 08 2d	sta $2d08,y		sta AttriBuffer+40,y
+107	.1c90	99 09 2d	sta $2d09,y		sta AttriBuffer+41,y
+108	.1c93	20 97 21	jsr $2197		jsr plotTileToBuffer_ZP5_ZT2  ; plot whole tile
+1059	.1c96	18		clc			clc
+1060	.1c97	a5 02		lda $02			lda ZPPointer1
+1061	.1c99	69 02		adc #$02		adc #2
+1062	.1c9b	85 02		sta $02			sta ZPPointer1
+1063	.1c9d	90 02		bcc $1ca1		bcc +
+1064	.1c9f	e6 03		inc $03			inc (ZPPointer1)+1
+1065	.1ca1					+
+110	.1ca1	e6 1a		inc $1a			inc ZPTemp1
+111	.1ca3	a5 1a		lda $1a			lda ZPTemp1
+112	.1ca5	a8		tay			tay
+113	.1ca6	c9 14		cmp #$14		cmp #20
+114	.1ca8	d0 d8		bne $1c82		bne -
+115							; now we need to copy the char data into VDC memory
+116	.1caa	a9 27		lda #$27		lda #>buffer
+117	.1cac	85 03		sta $03			sta ZPPointer1+1
+118	.1cae	a9 e0		lda #$e0		lda #<buffer
+119	.1cb0	85 02		sta $02			sta ZPPointer1
+906	.1cb2	a5 06		lda $06			lda ZPPointer3.lo
+907	.1cb4	a4 07		ldy $07			ldy ZPPointer3.hi
+908	.1cb6	a2 12		ldx #$12		ldx #18
+909	.1cb8	20 b2 22	jsr $22b2		jsr writeVDCRegP
+121	.1cbb	20 5c 22	jsr $225c		jsr copyBufferRowToVDC_ZT123
+1077	.1cbe	a5 06		lda $06			lda ZPPointer3
+1078	.1cc0	18		clc			clc
+1079	.1cc1	69 80		adc #$80		adc #<(kScreenWidth*16)
+1080	.1cc3	85 06		sta $06			sta ZPPointer3
+1081	.1cc5	a5 07		lda $07			lda ZPPointer3+1
+1082	.1cc7	69 02		adc #$02		adc #>(kScreenWidth*16)
+1083	.1cc9	85 07		sta $07			sta ZPPointer3+1
+1059	.1ccb	18		clc			clc
+1060	.1ccc	a5 0c		lda $0c			lda ZPPointer6
+1061	.1cce	69 50		adc #$50		adc #kScreenWidth*2
+1062	.1cd0	85 0c		sta $0c			sta ZPPointer6
+1063	.1cd2	90 02		bcc $1cd6		bcc +
+1064	.1cd4	e6 0d		inc $0d			inc (ZPPointer6)+1
+1065	.1cd6					+
+1059	.1cd6	18		clc			clc
+1060	.1cd7	a5 14		lda $14			lda mapPointer
+1061	.1cd9	69 28		adc #$28		adc #kMapWidth
+1062	.1cdb	85 14		sta $14			sta mapPointer
+1063	.1cdd	90 02		bcc $1ce1		bcc +
+1064	.1cdf	e6 15		inc $15			inc (mapPointer)+1
+1065	.1ce1					+
+125	.1ce1	c6 1d		dec $1d			dec ZPTemp4
+126	.1ce3	10 91		bpl $1c76		bpl _copySetLoop
+
+128	.1ce5	a9 00		lda #$00		lda #0
+129	.1ce7	85 18		sta $18			sta activeBitmap
+130	.1ce9	85 1f		sta $1f			sta Map.x
+131	.1ceb	85 20		sta $20			sta Map.y
+132	.1ced	a9 13		lda #$13		lda #<DummyMap+(kScreenWidth/2) -1
+133	.1cef	85 14		sta $14			sta mapPointer
+134	.1cf1	a9 26		lda #$26		lda #>DummyMap+(kScreenWidth/2) -1
+135	.1cf3	85 15		sta $15			sta mapPointer+1
+
+137						; Main scroll loop
+138						; not that optimal, but easy to follow
+139	.1cf5					LOOP
+140	.1cf5	ad 00 dc	lda $dc00		lda $dc00
+141	.1cf8	29 0a		and #$0a		and #8+2
+142	.1cfa	d0 06		bne $1d02		bne +
+143	.1cfc	20 4a 1f	jsr $1f4a			jsr shiftDownRight
+144	.1cff	4c f5 1c	jmp $1cf5			jmp LOOP
+145	.1d02	ad 00 dc	lda $dc00	+	lda $dc00
+146	.1d05	29 06		and #$06		and #4+2
+147	.1d07	d0 06		bne $1d0f		bne +
+148	.1d09	20 81 1f	jsr $1f81			jsr shiftDownLeft
+149	.1d0c	4c f5 1c	jmp $1cf5			jmp LOOP
+150	.1d0f	ad 00 dc	lda $dc00	+	lda $dc00
+151	.1d12	29 09		and #$09		and #8+1
+152	.1d14	d0 06		bne $1d1c		bne +
+153	.1d16	20 b1 1f	jsr $1fb1			jsr shiftUpRight
+154	.1d19	4c f5 1c	jmp $1cf5			jmp LOOP
+155	.1d1c	ad 00 dc	lda $dc00	+	lda $dc00
+156	.1d1f	29 05		and #$05		and #4+1
+157	.1d21	d0 06		bne $1d29		bne +
+158	.1d23	20 e1 1f	jsr $1fe1			jsr shiftUpLeft
+159	.1d26	4c f5 1c	jmp $1cf5			jmp LOOP
+160	.1d29	ad 00 dc	lda $dc00	+  lda $dc00
+161	.1d2c	29 08		and #$08		and #$8
+162	.1d2e	d0 06		bne $1d36		bne +
+163	.1d30	20 38 1e	jsr $1e38		jsr shiftRight
+164	.1d33	4c 40 1d	jmp $1d40		jmp _UD
+165	.1d36	ad 00 dc	lda $dc00	+	lda $dc00
+166	.1d39	29 04		and #$04		and #$4
+167	.1d3b	d0 03		bne $1d40		bne +
+168	.1d3d	20 82 1e	jsr $1e82		jsr shiftLeft
+169	.1d40					_UD
+170	.1d40	ad 00 dc	lda $dc00	+	lda $dc00
+171	.1d43	29 02		and #$02		and #$2
+172	.1d45	d0 03		bne $1d4a		bne +
+173	.1d47	20 29 1f	jsr $1f29		jsr shiftDown
+174	.1d4a	ad 00 dc	lda $dc00	+	lda $dc00
+175	.1d4d	29 01		and #$01		and #$1
+176	.1d4f	d0 03		bne $1d54		bne +
+177	.1d51	20 e6 1e	jsr $1ee6		jsr shiftUp
+178	.1d54	4c f5 1c	jmp $1cf5	+	jmp LOOP
+
+180						;	inc $d020
+181	.1d57	4c f5 1c	jmp $1cf5	  jmp loop
+
+
+184						;data to set the VDC to 40 col mode
+185	.1d5a					VDC40ColSetup .block
+186											;reg, value
+187							_values := [(0,63),
+188											(1,kScreenWidth),
+189											(2,55),
+190											(3,69),
+191											(6,kScreenHeight),
+192										   (22,$89),
+193										   (25,215),
+194										   (27,0),
+195										   (34,63),
+196										   (35,52),
+197										   (20,>kAttributes1),
+198										   (21,<kAttributes1),
+199										   (12,>kBitmap1),
+200										   (13,<kBitmap1)
+201	=[(0,63),(1,40),(2,55),(3,69),(6,22),(22,$89),(25,215),(27,0),(34,63),(35,52),(20,x'1b'),(21,x'80'),(12,x'00'),(13,x'00')]
+											]
+202	=14						length = len(_values)
+203	>1d5a	00 01 02 03 06 16 19 1b			register .byte _values[:,0]
+	>1d62	22 23 14 15 0c 0d
+204	>1d68	3f 28 37 45 16 89 d7 00			value .byte _values[:,1]
+	>1d70	3f 34 1b 80 00 00
+205						.bend
+
+207	.1d76					AddAndWrapMapX
+208						;adds a to Map.x wrapping arround
+209	.1d76	18		clc			clc
+210	.1d77	65 1f		adc $1f			adc Map.x
+211	.1d79	c9 28		cmp #$28		cmp #kMapWidth
+212	.1d7b	90 03		bcc $1d80		bcc +
+213	.1d7d	38		sec				sec
+214	.1d7e	e9 28		sbc #$28			sbc #kMapWidth
+215	.1d80	85 1f		sta $1f		+	sta Map.x
+216	.1d82	60		rts			rts
+
+218	.1d83					SubAndWrapMapX_ZT1
+219						;subs a from Map.x wrapping arround
+220						;trashes ZPTemp1
+221	.1d83	85 1a		sta $1a			sta ZPTemp1
+222	.1d85	38		sec			sec
+223	.1d86	a5 1f		lda $1f			lda Map.x
+224	.1d88	e5 1a		sbc $1a			sbc ZPTemp1
+225	.1d8a	c9 28		cmp #$28		cmp #kMapWidth
+226	.1d8c	90 03		bcc $1d91		bcc +
+227	.1d8e	18		clc				clc
+228	.1d8f	69 28		adc #$28			adc #kMapWidth
+229	.1d91	85 1f		sta $1f		+	sta Map.x
+230	.1d93	60		rts			rts
+
+232	.1d94					AddAndWrapMapY
+233						;adds a to Map.y wrapping arround
+234	.1d94	18		clc			clc
+235	.1d95	65 20		adc $20			adc Map.y
+236	.1d97	c9 0c		cmp #$0c		cmp #kMapHeight
+237	.1d99	90 03		bcc $1d9e		bcc +
+238	.1d9b	38		sec				sec
+239	.1d9c	e9 0c		sbc #$0c			sbc #kMapHeight
+240	.1d9e	85 20		sta $20		+	sta Map.y
+241	.1da0	60		rts			rts
+
+243	.1da1					SubAndWrapMapY_ZT1
+244						;subs a from Map.y wrapping arround
+245						;trashes ZPTemp1
+246	.1da1	85 1a		sta $1a			sta ZPTemp1
+247	.1da3	38		sec			sec
+248	.1da4	a5 20		lda $20			lda Map.y
+249	.1da6	e5 1a		sbc $1a			sbc ZPTemp1
+250	.1da8	c9 0c		cmp #$0c		cmp #kMapHeight
+251	.1daa	90 03		bcc $1daf		bcc +
+252	.1dac	18		clc				clc
+253	.1dad	69 0c		adc #$0c			adc #kMapHeight
+254	.1daf	85 20		sta $20		+	sta Map.y
+255	.1db1	60		rts			rts
+
+257	.1db2					restoreMapXYFromStack
+258						;loads Map.x,Map.y from the stack
+259						;assumes they are before the rts
+260	.1db2	ba		tsx			tsx
+261	.1db3	bd 03 01	lda $0103,x		lda $101+2,x
+262	.1db6	85 20		sta $20			sta Map.y
+263	.1db8	bd 04 01	lda $0104,x		lda $102+2,x
+264	.1dbb	85 1f		sta $1f			sta Map.x ;12 + 4*3 = 24
+265	.1dbd	60		rts			rts
+
+267	.1dbe					setP3fromMapXY_ZPP4
+268						;This will set ZPPointer3 to Map.y *64 + Map.x
+269						;trashes ZPPpointer4
+270	.1dbe	a9 00		lda #$00		lda #$00
+271	.1dc0	85 07		sta $07			sta ZPPointer3.hi
+272	.1dc2	a5 20		lda $20			lda Map.y ; x64 or hi swap / 4
+273	.1dc4	0a		asl a			asl a ; x2
+274	.1dc5	26 07		rol $07			rol ZPPointer3.hi
+275	.1dc7	0a		asl a			asl a ; x4
+276	.1dc8	26 07		rol $07			rol ZPPointer3.hi
+277	.1dca	0a		asl a			asl a ; x8
+278	.1dcb	26 07		rol $07			rol ZPPointer3.hi
+279	.1dcd	85 08		sta $08			sta ZPPointer4.lo
+280	.1dcf	a5 07		lda $07			lda ZPPointer3.hi
+281	.1dd1	85 09		sta $09			sta ZPPointer4.hi ; cache x8
+282	.1dd3	a5 08		lda $08			lda ZPPointer4.lo
+283	.1dd5	0a		asl a			asl a ; x16
+284	.1dd6	26 07		rol $07			rol ZPPointer3.hi
+285	.1dd8	0a		asl a			asl a ; x32
+286	.1dd9	26 07		rol $07			rol ZPPointer3.hi
+287	.1ddb	18		clc			clc
+288	.1ddc	65 08		adc $08			adc ZPPointer4.lo
+289	.1dde	85 06		sta $06			sta ZPPointer3.lo
+290	.1de0	a5 07		lda $07			lda ZPPointer3.hi
+291	.1de2	65 09		adc $09			adc ZPPointer4.hi
+292	.1de4	18		clc			clc
+293	.1de5	69 26		adc #$26		adc #>DummyMap
+294	.1de7	85 07		sta $07			sta ZPPointer3.hi
+1059	.1de9	18		clc			clc
+1060	.1dea	a5 06		lda $06			lda ZPPointer3
+1061	.1dec	65 1f		adc $1f			adc Map.x
+1062	.1dee	85 06		sta $06			sta ZPPointer3
+1063	.1df0	90 02		bcc $1df4		bcc +
+1064	.1df2	e6 07		inc $07			inc (ZPPointer3)+1
+1065	.1df4					+
+1059	.1df4	18		clc			clc
+1060	.1df5	a5 06		lda $06			lda ZPPointer3
+1061	.1df7	69 00		adc #$00		adc #<DummyMap
+1062	.1df9	85 06		sta $06			sta ZPPointer3
+1063	.1dfb	90 02		bcc $1dff		bcc +
+1064	.1dfd	e6 07		inc $07			inc (ZPPointer3)+1
+1065	.1dff					+
+297	.1dff	60		rts			rts
+
+
+300	.1e00					SetP1P2FromMapTileXY
+301							; ZPTemp1 = X unchanged
+302							; ZPTemp2 = Y unchanged
+303							; returns
+304						   ; ZPPointer 1 = TL Bitmap
+305						   ; ZPPointer 2 = TL Screen
+306						   ; ZPPointer4 TRASHED
+307	.1e00	a6 1b		ldx $1b		   ldx ZPTemp2
+1087	.1e02	bd c5 22	lda $22c5,x		lda BitmapYTableTile.lo,x
+1088	.1e05	85 02		sta $02			sta ZPPointer1.lo
+1089	.1e07	bd d2 22	lda $22d2,x		lda BitmapYTableTile.hi,x
+1090	.1e0a	85 03		sta $03			sta ZPPointer1.hi
+309	.1e0c	a9 00		lda #$00	   lda #0
+310	.1e0e	85 09		sta $09		   sta ZPPointer4.hi
+311	.1e10	a5 1a		lda $1a		   lda ZPTemp1
+312	.1e12	0a		asl a		   asl a
+313	.1e13	85 08		sta $08		   sta ZPPointer4.lo
+1094	.1e15	18		clc			clc
+1095	.1e16	a5 02		lda $02			lda ZPPointer1
+1096	.1e18	65 08		adc $08			adc ZPPointer4
+1097	.1e1a	85 02		sta $02			sta ZPPointer1
+1098	.1e1c	a5 03		lda $03			lda (ZPPointer1)+1
+1099	.1e1e	65 09		adc $09			adc (ZPPointer4)+1
+1100	.1e20	85 03		sta $03			sta (ZPPointer1)+1
+1087	.1e22	bd df 22	lda $22df,x		lda ScreenYTableTile.lo,x
+1088	.1e25	85 04		sta $04			sta ZPPointer2.lo
+1089	.1e27	bd ec 22	lda $22ec,x		lda ScreenYTableTile.hi,x
+1090	.1e2a	85 05		sta $05			sta ZPPointer2.hi
+316	.1e2c	a5 1a		lda $1a		   lda ZPTemp1
+317	.1e2e	0a		asl a		   asl a ; 2x
+318	.1e2f	65 04		adc $04		   adc ZPPointer2.lo
+319	.1e31	85 04		sta $04		   sta ZPPointer2.lo
+320	.1e33	90 02		bcc $1e37	   bcc +
+321	.1e35	e6 05		inc $05		   	inc ZPPointer2.hi ; P2 = Screen + y*80 + x*2
+322	.1e37	60		rts		+  rts
+
+324	.1e38					shiftRight
+325						;shift the screen to the left, so it looks like it goes to right
+326	.1e38	a9 00		lda #$00		lda #kScrollRightIndex
+327	.1e3a	20 0a 20	jsr $200a		jsr doDMAForDirection_ZT1
+328							; move the map Pointer over
+329	.1e3d	a9 01		lda #$01		lda #1
+330	.1e3f	20 76 1d	jsr $1d76		jsr AddAndWrapMapX
+331	.1e42	48		pha			pha
+332	.1e43	a5 20		lda $20			lda Map.Y
+333	.1e45	48		pha			pha ; save Map.X and Y
+334	.1e46	a9 13		lda #$13		lda #kScreenTileWidth-1
+335	.1e48	20 76 1d	jsr $1d76		jsr AddAndWrapMapX ; offset to the side of the map
+336	.1e4b	a9 13		lda #$13		lda #kScreenTileWidth-1
+337	.1e4d	85 1a		sta $1a			sta ZPTemp1
+338	.1e4f	a9 00		lda #$00		lda #0
+339	.1e51	85 1b		sta $1b			sta ZPTemp2
+340	.1e53	20 59 1e	jsr $1e59		jsr plotColumnBitmap
+341						;	!!Map.X -= #19 ; move it back to the left edge
+342	.1e56	4c 99 1e	jmp $1e99		jmp restoreMapValuesSetIOWaitAndFlip
+
+344	.1e59					plotColumnBitmap
+345						;ZPTemp1 = X offset
+346						;ZPTemp2 = Y offset
+347						;MapX,MapY = should be set for read positon of new data
+348	.1e59					_loop
+349	.1e59	20 be 1d	jsr $1dbe		jsr setP3fromMapXY_ZPP4		;get the map tile
+350	.1e5c	20 00 1e	jsr $1e00		jsr SetP1P2FromMapTileXY	;set the bitmap and attributes pointer
+351	.1e5f	a6 18		ldx $18			ldx activeBitmap
+352	.1e61	a5 03		lda $03			lda ZPPointer1.hi
+353	.1e63	18		clc			clc
+354	.1e64	7d b8 20	adc $20b8,x		adc BitMapHiOffset,x			; adjust for active bitmap
+355	.1e67	85 03		sta $03			sta ZPPointer1.hi
+356	.1e69	a5 05		lda $05			lda ZPPointer2.hi
+357	.1e6b	18		clc			clc
+358	.1e6c	7d b8 20	adc $20b8,x		adc BitMapHiOffset,x
+359	.1e6f	85 05		sta $05			sta ZPPointer2.hi
+360	.1e71	20 c6 21	jsr $21c6		jsr DrawMapTileOnScreen_ZP4_ZT5		; draw the tile
+361	.1e74	a9 01		lda #$01		lda #1
+362	.1e76	20 94 1d	jsr $1d94		jsr AddAndWrapMapY			; move down 1
+363	.1e79	e6 1b		inc $1b			inc ZPTemp2
+364	.1e7b	a5 1b		lda $1b			lda ZPTemp2
+365	.1e7d	c9 0b		cmp #$0b		cmp #kScreenTileHeight
+366	.1e7f	d0 d8		bne $1e59	bne _loop
+367	.1e81	60		rts			rts
+
+369	.1e82					shiftLeft
+370						;shift the screen to the right
+371	.1e82	a9 01		lda #$01		lda #kScrollLeftIndex
+372	.1e84	20 0a 20	jsr $200a		jsr doDMAForDirection_ZT1
+373							; move the map Pointer over
+374	.1e87	a9 01		lda #$01		lda #1
+375	.1e89	20 83 1d	jsr $1d83		jsr SubAndWrapMapX_ZT1
+376	.1e8c	48		pha			pha
+377	.1e8d	a5 20		lda $20			lda Map.Y
+378	.1e8f	48		pha			pha
+379	.1e90	a9 00		lda #$00		lda #0
+380	.1e92	85 1a		sta $1a			sta ZPTemp1
+381	.1e94	85 1b		sta $1b			sta ZPTemp2
+382	.1e96	20 59 1e	jsr $1e59		jsr plotColumnBitmap
+383	.1e99					restoreMapValuesSetIOWaitAndFlip
+384	.1e99	68		pla			pla
+385	.1e9a	85 20		sta $20			sta Map.Y
+386	.1e9c	68		pla			pla
+387	.1e9d	85 1f		sta $1f			sta Map.X ; restore Map.X and Y
+388	.1e9f	ad 00 d6	lda $d600	-  lda $d600
+389	.1ea2	29 20		and #$20		and #%00100000 ; make sure we are out of VBlank
+390	.1ea4	d0 f9		bne $1e9f		bne -
+391							;toggle the artributes
+392	.1ea6	a4 18		ldy $18			ldy activeBitmap
+393	.1ea8	d0 0c		bne $1eb6		bne +
+913	.1eaa	a9 80		lda #$80		lda #<kAttributes2
+914	.1eac	a0 3a		ldy #$3a		ldy #>kAttributes2
+915	.1eae	a2 14		ldx #$14		ldx #20
+916	.1eb0	20 b2 22	jsr $22b2		jsr writeVDCRegP
+395	.1eb3	4c bf 1e	jmp $1ebf			jmp ++
+396	.1eb6					+
+913	.1eb6	a9 80		lda #$80		lda #<kAttributes1
+914	.1eb8	a0 1b		ldy #$1b		ldy #>kAttributes1
+915	.1eba	a2 14		ldx #$14		ldx #20
+916	.1ebc	20 b2 22	jsr $22b2		jsr writeVDCRegP
+397	.1ebf					+
+398							; wait for vblank
+399	.1ebf	ad 00 d6	lda $d600	-	lda $d600
+400	.1ec2	29 20		and #$20		and #%00100000
+401	.1ec4	f0 f9		beq $1ebf		beq -
+402							; flip the screen
+403	.1ec6	a4 18		ldy $18			ldy activeBitmap
+404	.1ec8	d0 0c		bne $1ed6		bne +
+913	.1eca	a9 00		lda #$00		lda #<kBitmap2
+914	.1ecc	a0 1f		ldy #$1f		ldy #>kBitmap2
+915	.1ece	a2 0c		ldx #$0c		ldx #12
+916	.1ed0	20 b2 22	jsr $22b2		jsr writeVDCRegP
+406	.1ed3	4c df 1e	jmp $1edf			jmp ++
+407	.1ed6					+
+913	.1ed6	a9 00		lda #$00		lda #<kBitmap1
+914	.1ed8	a0 00		ldy #$00		ldy #>kBitmap1
+915	.1eda	a2 0c		ldx #$0c		ldx #12
+916	.1edc	20 b2 22	jsr $22b2		jsr writeVDCRegP
+408	.1edf					+
+409	.1edf	a5 18		lda $18			lda activeBitmap
+410	.1ee1	49 01		eor #$01		eor #1
+411	.1ee3	85 18		sta $18			sta activeBitmap
+412	.1ee5	60		rts			rts
+
+414	.1ee6					shiftUp
+415						;shift the screen down
+416	.1ee6	a9 02		lda #$02		lda #kScrollUpIndex
+417	.1ee8	20 0a 20	jsr $200a		jsr doDMAForDirection_ZT1
+418							; move the map Pointer over
+419	.1eeb	a5 1f		lda $1f			lda Map.x
+420	.1eed	48		pha			pha
+421	.1eee	a9 01		lda #$01		lda #1
+422	.1ef0	20 a1 1d	jsr $1da1		jsr SubAndWrapMapY_ZT1
+423	.1ef3	48		pha			pha
+424	.1ef4	a9 00		lda #$00		lda #0
+425	.1ef6	85 1a		sta $1a			sta ZPTemp1
+426	.1ef8	85 1b		sta $1b			sta ZPTemp2
+427	.1efa	20 00 1f	jsr $1f00		jsr plotRowBitmap
+428	.1efd	4c 99 1e	jmp $1e99		jmp restoreMapValuesSetIOWaitAndFlip
+
+430	.1f00					plotRowBitmap
+431						;this will plot across the screen
+432	.1f00					_loop
+433	.1f00	20 be 1d	jsr $1dbe		jsr setP3fromMapXY_ZPP4		; get pointer to map tile
+434	.1f03	20 00 1e	jsr $1e00		jsr SetP1P2FromMapTileXY	; get pointers to bitmap and attributes
+435	.1f06	a6 18		ldx $18			ldx activeBitmap
+436	.1f08	a5 03		lda $03			lda ZPPointer1.hi
+437	.1f0a	18		clc			clc
+438	.1f0b	7d b8 20	adc $20b8,x		adc BitMapHiOffset,x			; adjust for active bitmap
+439	.1f0e	85 03		sta $03			sta ZPPointer1.hi
+440	.1f10	a5 05		lda $05			lda ZPPointer2.hi
+441	.1f12	18		clc			clc
+442	.1f13	7d b8 20	adc $20b8,x		adc BitMapHiOffset,x
+443	.1f16	85 05		sta $05			sta ZPPointer2.hi
+444	.1f18	20 c6 21	jsr $21c6		jsr DrawMapTileOnScreen_ZP4_ZT5		; draw the tile
+445	.1f1b	a9 01		lda #$01		lda #1
+446	.1f1d	20 76 1d	jsr $1d76		jsr AddAndWrapMapX			; move over one
+447	.1f20	e6 1a		inc $1a			inc ZPTemp1
+448	.1f22	a5 1a		lda $1a			lda ZPTemp1
+449	.1f24	c9 14		cmp #$14		cmp #kScreenTileWidth
+450	.1f26	d0 d8		bne $1f00	bne _loop
+451	.1f28	60		rts			rts
+
+453	.1f29					shiftDown
+454							;shift the screen up
+455	.1f29	a9 03		lda #$03		lda #kScrollDownIndex
+456	.1f2b	20 0a 20	jsr $200a		jsr doDMAForDirection_ZT1
+457							; move the map Pointer over
+458	.1f2e	a5 1f		lda $1f			lda Map.x
+459	.1f30	48		pha			pha
+460	.1f31	a9 01		lda #$01		lda #1
+461	.1f33	20 94 1d	jsr $1d94		jsr AddAndWrapMapY
+462	.1f36	48		pha			pha
+463	.1f37	a9 0a		lda #$0a		lda #kScreenTileHeight-1
+464	.1f39	85 1b		sta $1b			sta ZPTemp2
+465	.1f3b	a9 00		lda #$00		lda #0
+466	.1f3d	85 1a		sta $1a			sta ZPTemp1
+467	.1f3f	a9 0a		lda #$0a		lda #kScreenTileHeight-1
+468	.1f41	20 94 1d	jsr $1d94		jsr AddAndWrapMapY
+469	.1f44	20 00 1f	jsr $1f00		jsr plotRowBitmap
+470	.1f47	4c 99 1e	jmp $1e99		jmp restoreMapValuesSetIOWaitAndFlip
+
+472	.1f4a					shiftDownRight
+473							;shift the screen up and left
+474	.1f4a	a9 04		lda #$04		lda #kScrollDownRightIndex
+475	.1f4c	20 0a 20	jsr $200a		jsr doDMAForDirection_ZT1
+476							; move the map Pointer over
+477	.1f4f	a9 01		lda #$01		lda #1
+478	.1f51	20 76 1d	jsr $1d76		jsr AddAndWrapMapX
+479	.1f54	48		pha			pha
+480	.1f55	a9 01		lda #$01		lda #1
+481	.1f57	20 94 1d	jsr $1d94		jsr AddAndWrapMapY
+482	.1f5a	48		pha			pha
+483	.1f5b	a9 13		lda #$13		lda #kScreenTileWidth-1
+484	.1f5d	20 76 1d	jsr $1d76		jsr AddAndWrapMapX
+485	.1f60	a9 00		lda #$00		lda #0
+486	.1f62	85 1b		sta $1b			sta ZPTemp2
+487	.1f64	a9 13		lda #$13		lda #kScreenTileWidth-1
+488	.1f66	85 1a		sta $1a			sta ZPTemp1
+489	.1f68	20 59 1e	jsr $1e59		jsr plotColumnBitmap
+490	.1f6b	20 b2 1d	jsr $1db2		jsr restoreMapXYFromStack
+491	.1f6e	a9 0a		lda #$0a		lda #kScreenTileHeight-1
+492	.1f70	20 94 1d	jsr $1d94		jsr AddAndWrapMapY
+493	.1f73	a9 0a		lda #$0a		lda #kScreenTileHeight-1
+494	.1f75	85 1b		sta $1b			sta ZPTemp2
+495	.1f77	a9 00		lda #$00		lda #0
+496	.1f79	85 1a		sta $1a			sta ZPTemp1
+497	.1f7b	20 00 1f	jsr $1f00		jsr plotRowBitmap
+498	.1f7e	4c 99 1e	jmp $1e99		jmp restoreMapValuesSetIOWaitAndFlip
+
+500	.1f81					shiftDownLeft
+501							;shift the screen up and right
+502	.1f81	a9 05		lda #$05		lda #kScrollDownLeftIndex
+503	.1f83	20 0a 20	jsr $200a		jsr doDMAForDirection_ZT1
+504							; move the map Pointer over
+505	.1f86	a9 01		lda #$01		lda #1
+506	.1f88	20 83 1d	jsr $1d83		jsr SubAndWrapMapX_ZT1
+507	.1f8b	48		pha			pha
+508	.1f8c	a9 01		lda #$01		lda #1
+509	.1f8e	20 94 1d	jsr $1d94		jsr AddAndWrapMapY
+510	.1f91	48		pha			pha
+511	.1f92	a9 00		lda #$00		lda #0
+512	.1f94	85 1a		sta $1a			sta ZPTemp1
+513	.1f96	85 1b		sta $1b			sta ZPTemp2
+514	.1f98	20 59 1e	jsr $1e59		jsr plotColumnBitmap
+515	.1f9b	20 b2 1d	jsr $1db2		jsr restoreMapXYFromStack
+516	.1f9e	a9 0a		lda #$0a		lda #kScreenTileHeight-1
+517	.1fa0	20 94 1d	jsr $1d94		jsr AddAndWrapMapY ; offset to the side of the map
+518	.1fa3	a9 00		lda #$00		lda #0
+519	.1fa5	85 1a		sta $1a			sta ZPTemp1
+520	.1fa7	a9 0a		lda #$0a		lda #kScreenTileHeight-1
+521	.1fa9	85 1b		sta $1b			sta ZPTemp2
+522	.1fab	20 00 1f	jsr $1f00		jsr plotRowBitmap
+523	.1fae	4c 99 1e	jmp $1e99		jmp restoreMapValuesSetIOWaitAndFlip
+
+525	.1fb1					shiftUpRight
+526							; shift the screen down and left
+527	.1fb1	a9 06		lda #$06		lda #kScrollUpRightIndex
+528	.1fb3	20 0a 20	jsr $200a		jsr doDMAForDirection_ZT1
+529							; move the map Pointer over
+530	.1fb6	a9 01		lda #$01		lda #1
+531	.1fb8	20 76 1d	jsr $1d76		jsr AddAndWrapMapX
+532	.1fbb	48		pha			pha
+533	.1fbc	a9 01		lda #$01		lda #1
+534	.1fbe	20 a1 1d	jsr $1da1		jsr SubAndWrapMapY_ZT1
+535	.1fc1	48		pha			pha
+536	.1fc2	a9 13		lda #$13		lda #kScreenTileWidth-1
+537	.1fc4	20 76 1d	jsr $1d76		jsr AddAndWrapMapX
+538	.1fc7	a9 00		lda #$00		lda #0
+539	.1fc9	85 1b		sta $1b			sta ZPTemp2
+540	.1fcb	a9 13		lda #$13		lda #kScreenTileWidth-1
+541	.1fcd	85 1a		sta $1a			sta ZPTemp1
+542	.1fcf	20 59 1e	jsr $1e59		jsr plotColumnBitmap
+543	.1fd2	20 b2 1d	jsr $1db2		jsr restoreMapXYFromStack
+544	.1fd5	a9 00		lda #$00		lda #0
+545	.1fd7	85 1a		sta $1a			sta ZPTemp1
+546	.1fd9	85 1b		sta $1b			sta ZPTemp2
+547	.1fdb	20 00 1f	jsr $1f00		jsr plotRowBitmap
+548	.1fde	4c 99 1e	jmp $1e99		jmp restoreMapValuesSetIOWaitAndFlip
+
+550	.1fe1					shiftUpLeft
+551							;shift the screen down and right
+552	.1fe1	a9 07		lda #$07		lda #kScrollUpLeftIndex
+553	.1fe3	20 0a 20	jsr $200a		jsr doDMAForDirection_ZT1
+554							; move the map Pointer over
+555	.1fe6	a9 01		lda #$01		lda #1
+556	.1fe8	20 83 1d	jsr $1d83		jsr SubAndWrapMapX_ZT1
+557	.1feb	48		pha			pha
+558	.1fec	a9 01		lda #$01		lda #1
+559	.1fee	20 a1 1d	jsr $1da1		jsr SubAndWrapMapY_ZT1
+560	.1ff1	48		pha			pha
+561	.1ff2	a9 00		lda #$00		lda #0
+562	.1ff4	85 1a		sta $1a			sta ZPTemp1
+563	.1ff6	85 1b		sta $1b			sta ZPTemp2
+564	.1ff8	20 59 1e	jsr $1e59		jsr plotColumnBitmap
+565	.1ffb	20 b2 1d	jsr $1db2		jsr restoreMapXYFromStack
+566	.1ffe	a9 00		lda #$00		lda #0
+567	.2000	85 1a		sta $1a			sta ZPTemp1
+568	.2002	85 1b		sta $1b			sta ZPTemp2
+569	.2004	20 00 1f	jsr $1f00		jsr plotRowBitmap
+570	.2007	4c 99 1e	jmp $1e99		jmp restoreMapValuesSetIOWaitAndFlip
+
+572	.200a					doDMAForDirection_ZT1
+573						;this will shift the bitmap, based upon the passed in index
+574						;it will handle active bitmap
+575	.200a	a4 18		ldy $18			ldy activeBitmap
+576	.200c	f0 03		beq $2011		beq +
+577	.200e	18		clc				clc
+578	.200f	69 08		adc #$08			adc #kOtherActiveDelta
+579	.2011	a8		tay		+	tay
+580							; set Bitmap Scroll data
+581	.2012	a2 18		ldx #$18		ldx #24
+582	.2014	a9 80		lda #$80		lda #128 ; copy
+583	.2016	85 19		sta $19			sta VDCReg24Shadow ; make sure our DMA is copy
+584	.2018	20 a6 22	jsr $22a6		jsr writeVDCReg
+585							; set source
+586	.201b	b9 ca 20	lda $20ca,y		lda CopyScrollSetUps.bitmap.src.hi,y
+587	.201e	a2 20		ldx #$20		ldx #32
+588	.2020	8e 00 d6	stx $d600		stx $d600
+589	.2023	2c 00 d6	bit $d600	-	bit $d600
+590	.2026	10 fb		bpl $2023		bpl -
+591	.2028	8d 01 d6	sta $d601		sta $d601
+592	.202b	e8		inx			inx ;33
+593	.202c	8e 00 d6	stx $d600		stx $d600
+594	.202f	b9 ba 20	lda $20ba,y		lda CopyScrollSetUps.bitmap.src.lo,y
+595	.2032	8d 01 d6	sta $d601		sta $d601
+596							; set Dest
+597	.2035	b9 ea 20	lda $20ea,y		lda CopyScrollSetUps.bitmap.dest.hi,y
+598	.2038	a2 12		ldx #$12		ldx #18
+599	.203a	8e 00 d6	stx $d600		stx $d600
+600	.203d	2c 00 d6	bit $d600	-	bit $d600
+601	.2040	10 fb		bpl $203d		bpl -
+602	.2042	8d 01 d6	sta $d601		sta $d601
+603	.2045	e8		inx			inx ;19
+604	.2046	8e 00 d6	stx $d600		stx $d600
+605	.2049	b9 da 20	lda $20da,y		lda CopyScrollSetUps.bitmap.dest.lo,y
+606	.204c	8d 01 d6	sta $d601		sta $d601
+
+608	.204f	b9 fa 20	lda $20fa,y		lda CopyScrollSetUps.bitmap.pages,y
+609	.2052	84 1a		sty $1a			sty ZPTemp1	; save offset index
+610	.2054	a8		tay			tay
+611	.2055	a9 ff		lda #$ff		lda #255
+612	.2057	a2 1e		ldx #$1e		ldx #30
+613	.2059					-
+614	.2059	20 a6 22	jsr $22a6		jsr writeVDCReg ; do DMA
+615	.205c	88		dey			dey
+616	.205d	10 fa		bpl $2059		bpl -
+617	.205f	a4 1a		ldy $1a			ldy ZPTemp1 ; restore offset index
+618	.2061	b9 0a 21	lda $210a,y		lda CopyScrollSetUps.bitmap.extra,y ; do extra bytes
+619	.2064	f0 03		beq $2069		beq + ; skip if 0 to do
+620	.2066	20 a6 22	jsr $22a6			jsr writeVDCReg
+621	.2069					+
+622							; attributes
+623							; set source
+624	.2069	b9 2a 21	lda $212a,y		lda CopyScrollSetUps.screen.src.hi,y
+625	.206c	a2 20		ldx #$20		ldx #32
+626	.206e	8e 00 d6	stx $d600		stx $d600
+627	.2071	2c 00 d6	bit $d600	-	bit $d600
+628	.2074	10 fb		bpl $2071		bpl -
+629	.2076	8d 01 d6	sta $d601		sta $d601
+630	.2079	e8		inx			inx ; 33
+631	.207a	8e 00 d6	stx $d600		stx $d600
+632	.207d	b9 1a 21	lda $211a,y		lda CopyScrollSetUps.screen.src.lo,y
+633	.2080	8d 01 d6	sta $d601		sta $d601
+634							; set Dest
+635	.2083	b9 4a 21	lda $214a,y		lda CopyScrollSetUps.screen.dest.hi,y
+636	.2086	a2 12		ldx #$12		ldx #18
+637	.2088	8e 00 d6	stx $d600		stx $d600
+638	.208b	2c 00 d6	bit $d600	-	bit $d600
+639	.208e	10 fb		bpl $208b		bpl -
+640	.2090	8d 01 d6	sta $d601		sta $d601
+641	.2093	e8		inx			inx ; 19
+642	.2094	8e 00 d6	stx $d600		stx $d600
+643	.2097	b9 3a 21	lda $213a,y		lda CopyScrollSetUps.screen.dest.lo,y
+644	.209a	8d 01 d6	sta $d601		sta $d601
+
+646	.209d	b9 5a 21	lda $215a,y		lda CopyScrollSetUps.screen.pages,y
+647	.20a0	84 1a		sty $1a			sty ZPTemp1
+648	.20a2	a8		tay			tay
+649	.20a3	a9 ff		lda #$ff		lda #255
+650	.20a5	a2 1e		ldx #$1e		ldx #30
+651	.20a7					-
+652	.20a7	20 a6 22	jsr $22a6		jsr writeVDCReg ; do DMA
+653	.20aa	88		dey			dey
+654	.20ab	10 fa		bpl $20a7		bpl -
+655	.20ad	a4 1a		ldy $1a			ldy ZPTemp1
+656	.20af	b9 6a 21	lda $216a,y		lda CopyScrollSetUps.screen.extra,y ; do extra bytes
+657	.20b2	f0 03		beq $20b7		beq +
+658	.20b4	20 a6 22	jsr $22a6			jsr writeVDCReg
+659	.20b7	60		rts		+ rts
+
+661	>20b8	1f 00				BitMapHiOffset .byte >kBitmap2,$00
+
+663	=0					kScrollRightIndex = 0
+664	=1					kScrollLeftIndex = 1
+665	=2					kScrollUpIndex = 2
+666	=3					kScrollDownIndex = 3
+667	=4					kScrollDownRightIndex = 4
+668	=5					kScrollDownLeftIndex = 5
+669	=6					kScrollUpRightIndex = 6
+670	=7					kScrollUpLeftIndex = 7
+
+672	=8					kOtherActiveDelta = 8
+
+674	.20ba					CopyScrollSetUps .block
+675							; src, dest, pages, extra, src, dest, pages, src
+676							_normal  := [[kBitmap1+2,kBitmap2,$1d,$00,
+677	=[[2,$1f00,$1d,$00,7042,$3a80,$03,$00]]						 kAttributes1+2,kAttributes2,$03,$00]] ; right
+678							_normal ..= [[kBitmap1,kBitmap2+2,$1d,$00,
+679	=[[2,$1f00,$1d,$00,7042,$3a80,$03,$00],[$0000,7938,$1d,$00,$1b80,14978,$03,$00]]
+											  kAttributes1,kAttributes2+2,$03,$00]] ; left
+680							_normal ..= [[kBitmap1,kBitmap2+640,$1a,$80,
+681	=[[2,$1f00,$1d,$00,7042,$3a80,$03,$00],[$0000,7938,$1d,$00,$1b80,14978,$03,$00],[$0000,8576,$1a,$80,$1b80,15056,$02,$70]]
+											  kAttributes1,kAttributes2+80,$02,$70]] ;up
+682							_normal ..= [[kBitmap1+640,kBitmap2,$1a,$80,
+683	=[[2,$1f00,$1d,$00,7042,$3a80,$03,$00],[$0000,7938,$1d,$00,$1b80,14978,$03,$00],[$0000,8576,$1a,$80,$1b80,15056,$02,$70],[640,$1f00,$1a,$80,7120,$3a80,$02,$70]]
+											  kAttributes1+80,kAttributes2,$02,$70]] ; down
+684							_normal ..= [[kBitmap1+642,kBitmap2,$1a,$80,
+685	=[[2,$1f00,$1d,$00,7042,$3a80,$03,$00],[$0000,7938,$1d,$00,$1b80,14978,$03,$00],[$0000,8576,$1a,$80,$1b80,15056,$02,$70],[640,$1f00,$1a,$80,7120,$3a80,$02,$70],[642,$1f00,$1a,$80,7122,$3a80,$02,$70]]
+											  kAttributes1+82,kAttributes2,$02,$70]] ; down right
+686							_normal ..= [[kBitmap1+640,kBitmap2+2,$1a,$80,
+687	=[[2,$1f00,$1d,$00,7042,$3a80,$03,$00],[$0000,7938,$1d,$00,$1b80,14978,$03,$00],[$0000,8576,$1a,$80,$1b80,15056,$02,$70],[640,$1f00,$1a,$80,7120,$3a80,$02,$70],[642,$1f00,$1a,$80,7122,$3a80,$02,$70],[640,7938,$1a,$80,7120,14978,$02,$70]]
+											  kAttributes1+80,kAttributes2+2,$02,$70]] ; down left
+688							_normal ..= [[kBitmap1,kBitmap2+638,$1a,$80,
+689	=[[2,$1f00,$1d,$00,7042,$3a80,$03,$00],[$0000,7938,$1d,$00,$1b80,14978,$03,$00],[$0000,8576,$1a,$80,$1b80,15056,$02,$70],[640,$1f00,$1a,$80,7120,$3a80,$02,$70],[642,$1f00,$1a,$80,7122,$3a80,$02,$70],[640,7938,$1a,$80,7120,14978,$02,$70],[$0000,8574,$1a,$80,$1b80,15054,$02,$70]]
+											  kAttributes1,kAttributes2+78,$02,$70]] ; up right
+690							_normal ..= [[kBitmap1,kBitmap2+642,$1a,$80,
+691	=[[2,$1f00,$1d,$00,7042,$3a80,$03,$00],[$0000,7938,$1d,$00,$1b80,14978,$03,$00],[$0000,8576,$1a,$80,$1b80,15056,$02,$70],[640,$1f00,$1a,$80,7120,$3a80,$02,$70],[642,$1f00,$1a,$80,7122,$3a80,$02,$70],[640,7938,$1a,$80,7120,14978,$02,$70],[$0000,8574,$1a,$80,$1b80,15054,$02,$70],[$0000,8578,$1a,$80,$1b80,15058,$02,$70]]
+											  kAttributes1,kAttributes2+82,$02,$70]] ; up left
+
+693							_otherActive :=  [[kBitmap2+2,kBitmap1,$1d,$00,
+694	=[[7938,$0000,$1d,$00,14978,$1b80,$03,$00]]
+													 kAttributes2+2,kAttributes1,$03,$00]] ; right other
+695							_otherActive ..= [[kBitmap2,kBitmap1+2,$1d,$00,
+696	=[[7938,$0000,$1d,$00,14978,$1b80,$03,$00],[$1f00,2,$1d,$00,$3a80,7042,$03,$00]]
+													 kAttributes2,kAttributes1+2,$03,$00]] ; left other
+697							_otherActive ..= [[kBitmap2,kBitmap1+640,$1a,$00,
+698	=[[7938,$0000,$1d,$00,14978,$1b80,$03,$00],[$1f00,2,$1d,$00,$3a80,7042,$03,$00],[$1f00,640,$1a,$00,$3a80,7120,$02,$70]]
+													 kAttributes2,kAttributes1+80,$02,$70]] ;up other
+699							_otherActive ..= [[kBitmap2+640,kBitmap1,$1a,$80,
+700	=[[7938,$0000,$1d,$00,14978,$1b80,$03,$00],[$1f00,2,$1d,$00,$3a80,7042,$03,$00],[$1f00,640,$1a,$00,$3a80,7120,$02,$70],[8576,$0000,$1a,$80,15056,$1b80,$02,$70]]
+													 kAttributes2+80,kAttributes1,$02,$70]] ;down other
+701							_otherActive ..= [[kBitmap2+642,kBitmap1,$1a,$80,
+702	=[[7938,$0000,$1d,$00,14978,$1b80,$03,$00],[$1f00,2,$1d,$00,$3a80,7042,$03,$00],[$1f00,640,$1a,$00,$3a80,7120,$02,$70],[8576,$0000,$1a,$80,15056,$1b80,$02,$70],[8578,$0000,$1a,$80,15058,$1b80,$02,$70]]
+											   	 kAttributes2+82,kAttributes1,$02,$70]] ; down right other
+703							_otherActive ..= [[kBitmap2+640,kBitmap1+2,$1a,$80,
+704	=[[7938,$0000,$1d,$00,14978,$1b80,$03,$00],[$1f00,2,$1d,$00,$3a80,7042,$03,$00],[$1f00,640,$1a,$00,$3a80,7120,$02,$70],[8576,$0000,$1a,$80,15056,$1b80,$02,$70],[8578,$0000,$1a,$80,15058,$1b80,$02,$70],[8576,2,$1a,$80,15056,7042,$02,$70]]
+											  		 kAttributes2+80,kAttributes1+2,$02,$70]] ; down left other
+705							_otherActive ..= [[kBitmap2,kBitmap1+638,$1a,$80,
+706	=[[7938,$0000,$1d,$00,14978,$1b80,$03,$00],[$1f00,2,$1d,$00,$3a80,7042,$03,$00],[$1f00,640,$1a,$00,$3a80,7120,$02,$70],[8576,$0000,$1a,$80,15056,$1b80,$02,$70],[8578,$0000,$1a,$80,15058,$1b80,$02,$70],[8576,2,$1a,$80,15056,7042,$02,$70],[$1f00,638,$1a,$80,$3a80,7118,$02,$70]]
+											 		 kAttributes2,kAttributes1+78,$02,$70]] ; up right
+707							_otherActive ..= [[kBitmap2,kBitmap1+642,$1a,$80,
+708	=[[7938,$0000,$1d,$00,14978,$1b80,$03,$00],[$1f00,2,$1d,$00,$3a80,7042,$03,$00],[$1f00,640,$1a,$00,$3a80,7120,$02,$70],[8576,$0000,$1a,$80,15056,$1b80,$02,$70],[8578,$0000,$1a,$80,15058,$1b80,$02,$70],[8576,2,$1a,$80,15056,7042,$02,$70],[$1f00,638,$1a,$80,$3a80,7118,$02,$70],[$1f00,642,$1a,$80,$3a80,7122,$02,$70]]
+											 		 kAttributes2,kAttributes1+82,$02,$70]] ; up left
+
+710	=[[2,$1f00,$1d,$00,7042,$3a80,$03,$00],[$0000,7938,$1d,$00,$1b80,14978,$03,$00],[$0000,8576,$1a,$80,$1b80,15056,$02,$70],[640,$1f00,$1a,$80,7120,$3a80,$02,$70],[642,$1f00,$1a,$80,7122,$3a80,$02,$70],[640,7938,$1a,$80,7120,14978,$02,$70],[$0000,8574,$1a,$80,$1b80,15054,$02,$70],[$0000,8578,$1a,$80,$1b80,15058,$02,$70],[7938,$0000,$1d,$00,14978,$1b80,$03,$00],[$1f00,2,$1d,$00,$3a80,7042,$03,$00],[$1f00,640,$1a,$00,$3a80,7120,$02,$70],[8576,$0000,$1a,$80,15056,$1b80,$02,$70],[8578,$0000,$1a,$80,15058,$1b80,$02,$70],[8576,2,$1a,$80,15056,7042,$02,$70],[$1f00,638,$1a,$80,$3a80,7118,$02,$70],[$1f00,642,$1a,$80,$3a80,7122,$02,$70]]
+							_both := _normal.._otherActive
+711	.20ba						bitmap .block
+712	.20ba							src .block
+713	>20ba	02 00 00 80 82 80 00 00					lo .byte <(CopyScrollSetUps._both[:,0])
+	>20c2	02 00 00 80 82 80 00 00
+714	>20ca	00 00 00 02 02 02 00 00					hi .byte >(CopyScrollSetUps._both[:,0])
+	>20d2	1f 1f 1f 21 21 21 1f 1f
+715								.bend
+716	.20da							dest .block
+717	>20da	00 02 80 00 00 02 7e 82					lo .byte <(CopyScrollSetUps._both[:,1])
+	>20e2	00 02 80 00 00 02 7e 82
+718	>20ea	1f 1f 21 1f 1f 1f 21 21					hi .byte >(CopyScrollSetUps._both[:,1])
+	>20f2	00 00 02 00 00 00 02 02
+719								.bend
+720	>20fa	1d 1d 1a 1a 1a 1a 1a 1a				pages .byte CopyScrollSetUps._both[:,2]
+	>2102	1d 1d 1a 1a 1a 1a 1a 1a
+721	>210a	00 00 80 80 80 80 80 80				extra .byte CopyScrollSetUps._both[:,3]
+	>2112	00 00 00 80 80 80 80 80
+722							.bend
+723	.211a						screen .block
+724	.211a							src .block
+725	>211a	82 80 80 d0 d2 d0 80 80					lo .byte <(CopyScrollSetUps._both[:,4])
+	>2122	82 80 80 d0 d2 d0 80 80
+726	>212a	1b 1b 1b 1b 1b 1b 1b 1b					hi .byte >(CopyScrollSetUps._both[:,4])
+	>2132	3a 3a 3a 3a 3a 3a 3a 3a
+727								.bend
+728	.213a							dest .block
+729	>213a	80 82 d0 80 80 82 ce d2					lo .byte <(CopyScrollSetUps._both[:,5])
+	>2142	80 82 d0 80 80 82 ce d2
+730	>214a	3a 3a 3a 3a 3a 3a 3a 3a					hi .byte >(CopyScrollSetUps._both[:,5])
+	>2152	1b 1b 1b 1b 1b 1b 1b 1b
+731								.bend
+732	>215a	03 03 02 02 02 02 02 02				pages .byte CopyScrollSetUps._both[:,6]
+	>2162	03 03 02 02 02 02 02 02
+733	>216a	00 00 70 70 70 70 70 70				extra .byte CopyScrollSetUps._both[:,7]
+	>2172	00 00 70 70 70 70 70 70
+734							.bend
+
+736						.bend
+
+738	.217a					convertMapToPointerGetAttribute
+739						;this will convert the tile pointed to by MapPointer+y into a
+740						;pointer to the tile and will return the attribute value in ZPTemp5
+741						;returns
+742						;ZPTemp5 Attribute value
+743						;ZPPointer4 Pointer to the start of the tile data
+744	.217a	b1 14		lda ($14),y		lda (mapPointer),y 		; read map
+745	.217c	aa		tax			tax 							; x = tile
+746	.217d	98		tya			tya
+747	.217e	0a		asl a			asl a
+748	.217f	a8		tay			tay							; y = y *2
+749	.2180	bd a1 25	lda $25a1,x		lda bitmapAttributes,x
+750	.2183	85 1e		sta $1e			sta ZPTemp5					;store the attributes
+751	.2185	8a		txa			txa							; a = tile num
+752							; this is the map tile
+753	.2186	0a		asl a			asl a
+754	.2187	0a		asl a			asl a ; x4 to get the char
+755	.2188	0a		asl a			asl a
+756	.2189	0a		asl a			asl a
+757	.218a	0a		asl a			asl a ; x8 to get the ram location This will need to go to 16 bit at some point
+758	.218b	18		clc			clc
+759	.218c	69 a1		adc #$a1		adc #<bitmapTiles
+760	.218e	85 08		sta $08			sta ZPPointer4.lo ; tiledata ptr
+761	.2190	a9 23		lda #$23		lda #>bitmapTiles
+762	.2192	69 00		adc #$00		adc #0
+763	.2194	85 09		sta $09			sta ZPPointer4.hi ; tiledata ptr
+764	.2196	60		rts			rts
+
+766	.2197					plotTileToBuffer_ZP5_ZT2
+767						; this will plot a VDC format tile to the buffer
+768						;ZPPointer1 = TL of tile pos in Buffer
+769						;ZPPointer4 = TL of tile data
+770	.2197	a5 02		lda $02			lda ZPPointer1.lo
+771	.2199	85 0a		sta $0a			sta ZPPointer5.lo
+772	.219b	a5 03		lda $03			lda ZPPointer1.hi
+773	.219d	85 0b		sta $0b			sta ZPPointer5.hi ; cache ZP1
+774	.219f	a0 00		ldy #$00		ldy #0
+775	.21a1	b1 08		lda ($08),y	-	lda (ZPPointer4),y ; read first byte
+776	.21a3	84 1b		sty $1b			sty ZPTemp2
+777	.21a5	a0 00		ldy #$00		ldy #0
+778	.21a7	91 0a		sta ($0a),y		sta (ZPPointer5),y ; store in buffer
+779	.21a9	e6 1b		inc $1b			inc ZPTemp2
+780	.21ab	a4 1b		ldy $1b			ldy ZPTemp2
+781	.21ad	b1 08		lda ($08),y		lda (ZPPointer4),y ; get next byte
+782	.21af	a0 01		ldy #$01		ldy #1
+783	.21b1	91 0a		sta ($0a),y		sta (ZPPointer5),y ; store in buffer
+1059	.21b3	18		clc			clc
+1060	.21b4	a5 0a		lda $0a			lda ZPPointer5
+1061	.21b6	69 28		adc #$28		adc #40
+1062	.21b8	85 0a		sta $0a			sta ZPPointer5
+1063	.21ba	90 02		bcc $21be		bcc +
+1064	.21bc	e6 0b		inc $0b			inc (ZPPointer5)+1
+1065	.21be					+
+785	.21be	a4 1b		ldy $1b			ldy ZPTemp2
+786	.21c0	c8		iny			iny
+787	.21c1	c0 20		cpy #$20		cpy #32
+788	.21c3	d0 dc		bne $21a1		bne -
+789	.21c5	60		rts			rts
+
+791	.21c6					DrawMapTileOnScreen_ZP4_ZT5
+792							; ZPPointer1 = TL of bitmap to draw
+793							; ZPPointer2 = TL of screen to draw
+794							; ZPPointer3 = Pointer to Map tile num
+795	.21c6	a0 00		ldy #$00		ldy #0
+796	.21c8	84 09		sty $09			sty ZPPointer4.hi
+797	.21ca	b1 06		lda ($06),y		lda (ZPPointer3),y ; get tile
+798	.21cc	48		pha			pha ; save the tile number
+799	.21cd	0a		asl a			asl a
+800	.21ce	0a		asl a			asl a ; x4
+801	.21cf	0a		asl a			asl a
+802	.21d0	26 09		rol $09			rol ZPPointer4.hi ; x8
+803	.21d2	0a		asl a			asl a
+804	.21d3	26 09		rol $09			rol ZPPointer4.hi ; x16
+805	.21d5	0a		asl a			asl a
+806	.21d6	26 09		rol $09			rol ZPPointer4.hi ;x32
+807	.21d8	18		clc			clc
+808	.21d9	69 a1		adc #$a1		adc #<SrcTiles
+809	.21db	85 08		sta $08			sta ZPPointer4.lo
+810	.21dd	a5 09		lda $09			lda ZPPointer4.hi
+811	.21df	69 23		adc #$23		adc #>SrcTiles
+812	.21e1	85 09		sta $09			sta ZPPointer4.hi ; Pointer 4 now holds pointer to the tile
+813	.21e3	20 f0 21	jsr $21f0		jsr plotCharToVdc_ZT4 ; draw the tile
+814	.21e6	68		pla			pla ; restore the tile num
+815	.21e7	aa		tax			tax
+816	.21e8	bd a1 25	lda $25a1,x		lda bitmapAttributes,x ; get attribute
+817	.21eb	85 1e		sta $1e			sta ZPTemp5
+818	.21ed	4c 1f 22	jmp $221f		jmp plotAttributesToVDC
+
+820	.21f0					plotCharToVdc_ZT4
+821							; ZPPointer1 should hold dest address
+822							; ZPPointer4 should hold the char data
+823	.21f0	a0 00		ldy #$00		ldy #0
+824	.21f2	84 1d		sty $1d			sty ZPTemp4
+825	.21f4					_l1
+906	.21f4	a5 02		lda $02			lda ZPPointer1.lo
+907	.21f6	a4 03		ldy $03			ldy ZPPointer1.hi
+908	.21f8	a2 12		ldx #$12		ldx #18
+909	.21fa	20 b2 22	jsr $22b2		jsr writeVDCRegP
+827	.21fd	a4 1d		ldy $1d			ldy ZPTemp4
+828	.21ff	b1 08		lda ($08),y		lda (ZPPointer4),y
+829	.2201	a2 1f		ldx #$1f		ldx #31
+830	.2203	20 a6 22	jsr $22a6		jsr writeVDCReg
+831	.2206	c8		iny			iny
+832	.2207	b1 08		lda ($08),y		lda (ZPPointer4),y
+833	.2209	20 a6 22	jsr $22a6		jsr writeVDCReg ; #31
+1059	.220c	18		clc			clc
+1060	.220d	a5 02		lda $02			lda ZPPointer1
+1061	.220f	69 28		adc #$28		adc #kScreenWidth
+1062	.2211	85 02		sta $02			sta ZPPointer1
+1063	.2213	90 02		bcc $2217		bcc +
+1064	.2215	e6 03		inc $03			inc (ZPPointer1)+1
+1065	.2217					+
+835	.2217	c8		iny			iny
+836	.2218	84 1d		sty $1d			sty ZPTemp4
+837	.221a	c0 20		cpy #$20		cpy #32 ; num bites in tile
+838	.221c	d0 d6		bne $21f4		bne _l1
+839	.221e	60		rts			rts
+
+841	.221f					plotAttributesToVDC
+842						; this will store the value in ZPTemp5, 4 times in 2x2
+843						; to the location help in ZPPointer2
+906	.221f	a5 04		lda $04			lda ZPPointer2.lo
+907	.2221	a4 05		ldy $05			ldy ZPPointer2.hi
+908	.2223	a2 12		ldx #$12		ldx #18
+909	.2225	20 b2 22	jsr $22b2		jsr writeVDCRegP
+845	.2228	a5 1e		lda $1e			lda ZPTemp5
+846	.222a	a2 1f		ldx #$1f		ldx #31
+847	.222c	20 a6 22	jsr $22a6		jsr writeVDCReg
+848	.222f	20 a6 22	jsr $22a6		jsr writeVDCReg
+1059	.2232	18		clc			clc
+1060	.2233	a5 04		lda $04			lda ZPPointer2
+1061	.2235	69 28		adc #$28		adc #kScreenWidth
+1062	.2237	85 04		sta $04			sta ZPPointer2
+1063	.2239	90 02		bcc $223d		bcc +
+1064	.223b	e6 05		inc $05			inc (ZPPointer2)+1
+1065	.223d					+
+906	.223d	a5 04		lda $04			lda ZPPointer2.lo
+907	.223f	a4 05		ldy $05			ldy ZPPointer2.hi
+908	.2241	a2 12		ldx #$12		ldx #18
+909	.2243	20 b2 22	jsr $22b2		jsr writeVDCRegP
+851	.2246	a5 1e		lda $1e			lda ZPTemp5
+852	.2248	a2 1f		ldx #$1f		ldx #31
+853	.224a	20 a6 22	jsr $22a6		jsr writeVDCReg
+854	.224d	20 a6 22	jsr $22a6		jsr writeVDCReg
+1059	.2250	18		clc			clc
+1060	.2251	a5 04		lda $04			lda ZPPointer2
+1061	.2253	69 28		adc #$28		adc #kScreenWidth
+1062	.2255	85 04		sta $04			sta ZPPointer2
+1063	.2257	90 02		bcc $225b		bcc +
+1064	.2259	e6 05		inc $05			inc (ZPPointer2)+1
+1065	.225b					+
+856	.225b	60		rts			rts
+
+858	.225c					copyBufferRowToVDC_ZT123
+859						;This will copy the buffer to the VDC
+860						;VDC should be primed to the bitmap locations before calling
+861						;ZPPointer1 points to start of Buffer data, it will be advanced during operation
+862						;ZPPointer6 holds the attribute dest location
+863	.225c	a9 0f		lda #$0f		lda #15
+864	.225e	85 1b		sta $1b			sta ZPTemp2
+865	.2260					_copyRow
+866	.2260	a9 27		lda #$27		lda #kScreenWidth-1
+867	.2262	85 1a		sta $1a			sta ZPTemp1
+868	.2264	a0 00		ldy #$00		ldy #0
+869	.2266	84 1c		sty $1c			sty ZPTemp3
+870	.2268					_copyBuffer
+871	.2268	a4 1c		ldy $1c			ldy ZPTemp3
+872	.226a	b1 02		lda ($02),y		lda (ZPPointer1),y
+873	.226c	a2 1f		ldx #$1f		ldx #31
+874	.226e	20 a6 22	jsr $22a6		jsr writeVDCReg
+875	.2271	e6 1c		inc $1c			inc ZPTemp3
+876	.2273	c6 1a		dec $1a			dec ZPTemp1
+877	.2275	10 f1		bpl $2268		bpl _copyBuffer
+1059	.2277	18		clc			clc
+1060	.2278	a5 02		lda $02			lda ZPPointer1
+1061	.227a	69 28		adc #$28		adc #40
+1062	.227c	85 02		sta $02			sta ZPPointer1
+1063	.227e	90 02		bcc $2282		bcc +
+1064	.2280	e6 03		inc $03			inc (ZPPointer1)+1
+1065	.2282					+
+879	.2282	c6 1b		dec $1b			dec ZPTemp2
+880	.2284	10 da		bpl $2260		bpl _copyRow
+881							; now we copy the attributes
+882	.2286	a9 00		lda #$00		lda #0
+883	.2288	85 1a		sta $1a			sta ZPTemp1
+906	.228a	a5 0c		lda $0c			lda ZPPointer6.lo
+907	.228c	a4 0d		ldy $0d			ldy ZPPointer6.hi
+908	.228e	a2 12		ldx #$12		ldx #18
+909	.2290	20 b2 22	jsr $22b2		jsr writeVDCRegP
+885	.2293					_copyAttrbuffer
+886	.2293	a4 1a		ldy $1a			ldy ZPTemp1
+887	.2295	b9 e0 2c	lda $2ce0,y		lda AttriBuffer,y
+888	.2298	a2 1f		ldx #$1f		ldx #31
+889	.229a	20 a6 22	jsr $22a6		jsr writeVDCReg
+890	.229d	e6 1a		inc $1a			inc ZPTemp1
+891	.229f	a5 1a		lda $1a			lda ZPTemp1
+892	.22a1	c9 50		cmp #$50		cmp #kScreenWidth*2
+893	.22a3	d0 ee		bne $2293		bne _copyAttrbuffer
+894	.22a5	60		rts			rts
+
+896	.22a6					writeVDCReg
+897						; a = value
+898						; x = egister
+899	.22a6	8e 00 d6	stx $d600		stx $d600
+900	.22a9	2c 00 d6	bit $d600	-	bit $d600
+901	.22ac	10 fb		bpl $22a9		bpl -
+902	.22ae	8d 01 d6	sta $d601		sta $d601
+903	.22b1	60		rts			rts
+
+905						WRITE_POINTER_VDC .macro
+910						.endm
+
+912						WRITE_16IMMEDIATE_VDC .macro
+917						.endm
+
+919	.22b2					writeVDCRegP
+920						; a = lo value
+921						; y = hi value
+922						; x = start register
+923	.22b2	8e 00 d6	stx $d600		stx $d600
+924	.22b5	2c 00 d6	bit $d600	-	bit $d600
+925	.22b8	10 fb		bpl $22b5		bpl -
+926	.22ba	8c 01 d6	sty $d601		sty $d601
+927	.22bd	e8		inx			inx
+928	.22be	8e 00 d6	stx $d600		stx $d600
+929	.22c1	8d 01 d6	sta $d601		sta $d601
+930	.22c4	60		rts			rts
+
+932						;lookup tables for Y to line start in VDC bitmap
+933	.22c5					BitmapYTableTile .block
+934	=[0,640,1280,1920,2560,3200,3840,4480,5120,5760,6400,7040,7680]
+							- = range(kBitmap1, kBitmap1+8000, 640)
+935	>22c5	00 80 00 80 00 80 00 80			lo .byte <(-)
+	>22cd	00 80 00 80 00
+936	>22d2	00 02 05 07 0a 0c 0f 11			hi .byte >(-)
+	>22da	14 16 19 1b 1e
+937						.bend
+
+939						;lookup tables for Y to line start in VDC attributes
+940	.22df					ScreenYTableTile .block
+941	=[7040,7120,7200,7280,7360,7440,7520,7600,7680,7760,7840,7920,8000]
+							- = range(kAttributes1, kAttributes1+1000, 80)
+942	>22df	80 d0 20 70 c0 10 60 b0			lo .byte <(-)
+	>22e7	00 50 a0 f0 40
+943	>22ec	1b 1b 1c 1c 1c 1d 1d 1d			hi .byte >(-)
+	>22f4	1e 1e 1e 1e 1f
+944						.bend
+
+
+947						;copied from C128 KERNAL, so you can boot this from the C64 side, say EF3 cart etc
+948	.22f9	bc 0d 23	ldy $230d,x	INIT80VDCRegs           LDY VDCDEFTBL,X
+949	.22fc	30 0d		bmi $230b	                        BMI bE1EE
+950	.22fe	e8		inx		                        INX
+951	.22ff	bd 0d 23	lda $230d,x	                        LDA VDCDEFTBL,X
+952	.2302	e8		inx		                        INX
+953	.2303	8c 00 d6	sty $d600	                        STY $D600
+954	.2306	8d 01 d6	sta $d601	                        STA $D601
+955	.2309	10 ee		bpl $22f9	                        BPL INIT80VDCRegs
+956	.230b	e8		inx		bE1EE                   INX
+957	.230c	60		rts		                        RTS
+
+
+960	>230d	00 7e 01 50 02 66 03 49		VDCDEFTBL               .BYTE $00,$7E,$01,$50,$02,$66,$03,$49
+961	>2315	04 20 05 00 06 19 07 1d		                        .BYTE $04,$20,$05,$00,$06,$19,$07,$1D
+962	>231d	08 00 09 07 0a 20 0b 07		                        .BYTE $08,$00,$09,$07,$0A,$20,$0B,$07
+963	>2325	0c 00 0d 00 0e 00 0f 00		                        .BYTE $0C,$00,$0D,$00,$0E,$00,$0F,$00
+964	>232d	14 08 15 00 17 08 18 20		                        .BYTE $14,$08,$15,$00,$17,$08,$18,$20
+965	>2335	19 40 1a f0 1b 00 1c 20		                        .BYTE $19,$40,$1A,$F0,$1B,$00,$1C,$20
+966	>233d	1d 07 22 7d 23 64 24		                        .BYTE $1D,$07,$22,$7D,$23,$64,$24
+967	>2344	05 16 78 ff 19 47 ff 04		pE32F                   .BYTE $05,$16,$78,$FF,$19,$47,$FF,$04
+968	>234c	26 07 20 ff			                        .BYTE $26,$07,$20,$FF
+
+970						        ; prints a 32 bit value to the screen
+971	.2350					printdec
+972	.2350	20 69 23	jsr $2369	        jsr hex2dec
+
+974	.2353	a2 09		ldx #$09	        ldx #9
+975	.2355	bd 97 23	lda $2397,x	l1      lda result,x
+976	.2358	d0 03		bne $235d	        bne l2
+977	.235a	ca		dex		        dex             ; skip leading zeros
+978	.235b	d0 f8		bne $2355	        bne l1
+
+980	.235d	bd 97 23	lda $2397,x	l2      lda result,x
+981	.2360	09 30		ora #$30	        ora #$30
+982	.2362	20 d2 ff	jsr $ffd2	        jsr $ffd2
+983	.2365	ca		dex		        dex
+984	.2366	10 f5		bpl $235d	        bpl l2
+985	.2368	60		rts		        rts
+
+987						        ; converts 10 digits (32 bit values have max. 10 decimal digits)
+988	.2369					hex2dec
+989	.2369	a2 00		ldx #$00	        ldx #0
+990	.236b	20 77 23	jsr $2377	l3      jsr div10
+991	.236e	9d 97 23	sta $2397,x	        sta result,x
+992	.2371	e8		inx		        inx
+993	.2372	e0 0a		cpx #$0a	        cpx #10
+994	.2374	d0 f5		bne $236b	        bne l3
+995	.2376	60		rts		        rts
+
+997						        ; divides a 32 bit value by 10
+998						        ; remainder is returned in akku
+999	.2377					div10
+1000	.2377	a0 20		ldy #$20	        ldy #32         ; 32 bits
+1001	.2379	a9 00		lda #$00	        lda #0
+1002	.237b	18		clc		        clc
+1003	.237c	2a		rol a		l4      rol
+1004	.237d	c9 0a		cmp #$0a	        cmp #10
+1005	.237f	90 02		bcc $2383	        bcc skip
+1006	.2381	e9 0a		sbc #$0a	        sbc #10
+1007	.2383	2e 93 23	rol $2393	skip    rol value
+1008	.2386	2e 94 23	rol $2394	        rol value+1
+1009	.2389	2e 95 23	rol $2395	        rol value+2
+1010	.238c	2e 96 23	rol $2396	        rol value+3
+1011	.238f	88		dey		        dey
+1012	.2390	10 ea		bpl $237c	        bpl l4
+1013	.2392	60		rts		        rts
+
+1015	>2393	ff ff ff ff			value   .byte $ff,$ff,$ff,$ff
+
+1017	>2397	00 00 00 00 00 00 00 00		result  .byte 0,0,0,0,0,0,0,0,0,0
+	>239f	00 00
+
+
+1020	.23a1					bitmapTiles
+1021	.23a1					SrcTiles
+1022	>23a1	01 80 03 c0 07 20 0e 90		.binary "charsVDC.bin"
+	>23a9	07 20 0e 10 1d 08 3a 8c 0d 10 1a 88 35 44 77 e6
+	>23b9	39 9c 01 80 01 80 01 80 10 86 10 84 10 8c 18 c8
+	>23c9	09 98 09 10 09 18 0d 8c 0c 84 18 8c 10 98 19 98
+	>23d9	19 8c 10 84 18 86 08 82 00 00 00 00 01 00 02 80
+	>23e9	07 80 06 40 0d 40 3a a0 7d 50 6e 88 d3 46 e2 a0
+	>23f9	d1 54 e9 aa 00 00 00 00 00 00 20 00 50 00 20 10
+	>2409	00 28 00 10 00 00 10 00 28 00 10 40 00 a0 00 40
+	>2419	08 00 14 00 08 00 00 00 00 00 00 00 00 00 00 00
+	>2429	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2439	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2449	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2459	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2469	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2479	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2489	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2499	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>24a9	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>24b9	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>24c9	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>24d9	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>24e9	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>24f9	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2509	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2519	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2529	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2539	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2549	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2559	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2569	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2579	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2589	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+	>2599	00 00 00 00 00 00 00 00
+
+1024	.25a1					bitmapAttributes
+1025	>25a1	54 23 ce 5d			.byte $54,$23,$ce,$5d
+
+1027	>25a5					.align $100
+1028						;map
+1029	.2600					DummyMap
+1030	>2600	02 02 02 02 02 02 02 02		.binary "map.bin"
+	>2608	02 02 01 02 02 02 02 02 00 00 02 02 03 01 02 02
+	>2618	02 02 02 02 02 02 02 02 02 02 02 02 02 02 02 02
+	>2628	02 02 02 02 02 02 02 02 02 02 01 01 02 02 02 02
+	>2638	02 00 00 02 03 03 03 02 02 02 02 03 03 03 02 02
+	>2648	02 00 00 00 02 02 02 02 02 02 03 03 03 03 03 03
+	>2658	03 03 03 01 03 03 03 03 03 03 03 03 03 03 03 03
+	>2668	02 02 03 03 03 03 02 02 03 03 03 03 00 00 02 02
+	>2678	02 03 03 00 03 03 03 03 03 03 03 01 01 03 03 03
+	>2688	03 03 03 03 03 03 03 03 03 03 03 03 03 03 03 02
+	>2698	03 03 03 03 03 03 00 02 02 03 00 00 00 03 03 03
+	>26a8	03 03 03 03 01 03 03 03 03 03 03 03 03 03 03 03
+	>26b8	03 03 03 03 03 03 03 03 03 03 03 03 03 03 00 02
+	>26c8	02 03 03 00 00 00 03 03 03 03 03 03 01 03 03 03
+	>26d8	03 03 03 03 03 03 03 03 03 03 03 03 03 03 03 03
+	>26e8	03 03 03 03 03 03 00 02 02 03 03 03 00 03 03 03
+	>26f8	03 03 03 03 01 03 03 03 03 03 03 03 03 03 03 03
+	>2708	03 03 03 03 03 03 03 03 03 03 03 03 03 03 00 02
+	>2718	02 03 03 03 03 03 03 03 03 03 03 03 01 03 03 03
+	>2728	03 03 03 02 02 03 03 03 03 03 03 03 03 03 03 03
+	>2738	03 03 03 03 03 03 00 02 02 03 03 03 03 03 03 03
+	>2748	03 03 03 01 01 03 03 03 03 03 03 03 02 03 03 03
+	>2758	02 03 03 03 03 03 03 01 01 00 03 03 03 00 02 02
+	>2768	02 03 03 03 03 03 03 00 03 03 03 01 03 03 03 03
+	>2778	03 03 03 02 02 02 03 02 02 02 03 03 03 03 03 01
+	>2788	01 00 00 00 02 02 02 02 02 03 03 03 03 03 00 00
+	>2798	00 03 01 01 03 03 03 03 03 02 02 02 02 02 02 02
+	>27a8	03 03 02 03 03 03 03 01 01 00 00 03 00 02 02 02
+	>27b8	02 03 03 03 03 03 03 00 03 01 01 03 03 03 03 03
+	>27c8	02 02 02 02 02 02 02 02 03 03 02 03 03 03 03 03
+	>27d8	01 03 03 03 03 02 02 02
+
+
+1033	>27e0					buffer .fill 640*2
+1034	>2ce0					AttriBuffer .fill 80
+
+1036						*=$ffd2
+1037	.ffd2					CharOut ;&&ForcedStop don't follow this address
+
+1039						ClearInterupts .macro
+1056						.endm
+
+1058						ADCBW .macro
+1066						.endm
+
+1068	.0000					HLWord .union
+1069	>0000					 .word ?
+1070						 .struct
+1071	>0000					 	lo .byte ?
+1072	>0001					 	hi .byte ?
+1073						 .ends
+1074						.endu
+
+1076						ADCWIW .segment
+1084						.endm
+
+1086						LIW .macro
+1091						.endm
+
+1093						ADCW .macro
+1101						.endm
+
+1103						; MID LEVEL DATA SEGMENTS
+
+
+;******  End of listing
